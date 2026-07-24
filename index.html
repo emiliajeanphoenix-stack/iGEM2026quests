@@ -108,7 +108,18 @@
         .step.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .btn-wrapper { text-align: right; margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 20px; }
+        /* 底部按钮排版控制：支持左右分布 */
+        .btn-wrapper { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            margin-top: 30px; 
+            border-top: 1px solid var(--border-color); 
+            padding-top: 20px; 
+        }
+        .btn-wrapper.right-only {
+            justify-content: flex-end;
+        }
         
         button {
             background-color: var(--primary-color);
@@ -118,10 +129,21 @@
             font-size: 15px;
             cursor: pointer;
             border-radius: 6px;
-            transition: background 0.2s;
+            transition: background 0.2s, transform 0.1s;
         }
         button:hover { background-color: var(--hover-color); }
+        button:active { transform: scale(0.98); }
         button:disabled { background-color: var(--border-color); cursor: not-allowed; }
+
+        /* 上一题/上一部分按钮 特殊样式 */
+        .btn-prev {
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            border: 1px solid var(--border-color);
+        }
+        .btn-prev:hover {
+            background-color: var(--border-color);
+        }
 
         /* 结束动画界面 */
         #thank-you-screen {
@@ -148,7 +170,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* 移动端适配 */
         @media (max-width: 600px) {
             .container { padding: 20px 15px; }
         }
@@ -174,7 +195,7 @@
                 <p>本问卷仅限有月经经历的公民填写。有粗糙之处请多包涵，也请多多提供项目反馈，感谢大家。部分涉及到日常生活的问题几乎不含任何科学性，仅作现象罗列，请不要感到冒犯。</p>
                 <p>问卷无需专业知识、无对错答案、匿名填写、仅用于科研调研与公益科普分析，感谢您的支持！</p>
             </div>
-            <div class="btn-wrapper">
+            <div class="btn-wrapper right-only">
                 <button type="button" onclick="nextStep(1)">下一部分</button>
             </div>
         </div>
@@ -204,6 +225,7 @@
             </div>
 
             <div class="btn-wrapper">
+                <button type="button" class="btn-prev" onclick="nextStep(0)">上一部分</button>
                 <button type="button" onclick="nextStep(2)">下一部分</button>
             </div>
         </div>
@@ -398,6 +420,7 @@
             </div>
 
             <div class="btn-wrapper">
+                <button type="button" class="btn-prev" onclick="nextStep(1)">上一部分</button>
                 <button type="button" onclick="nextStep(3)">下一部分</button>
             </div>
         </div>
@@ -462,7 +485,15 @@
             </div>
 
             <div class="btn-wrapper">
-                <button type="submit" id="submit-btn">提交问卷</button>
+                <button type="button" class="btn-prev" onclick="nextStep(2)">上一部分</button>
+                
+                <!-- 提交按钮与未完成提示语动态切换 -->
+                <div id="submit-btn-wrapper" style="display:none;">
+                    <button type="submit" id="submit-btn">提交问卷</button>
+                </div>
+                <div id="submit-hint" style="color: #e57373; font-size: 13px; font-weight: bold;">
+                    *请回答完毕所有的问题后再提交问卷
+                </div>
             </div>
         </div>
     </form>
@@ -494,15 +525,16 @@
     const totalSteps = 4; // step-0 到 step-3
     
     function nextStep(stepIndex) {
-        // 隐藏所有 step
         document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
-        // 显示目标 step
         document.getElementById('step-' + stepIndex).classList.add('active');
-        // 更新进度条 (step0为0%，step3为100%)
+        
         const progressPercent = (stepIndex / (totalSteps - 1)) * 100;
         document.getElementById('progress-bar').style.width = progressPercent + '%';
-        // 自动回到页面顶部
+        
         window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        // 每次翻页时主动校验一次，以防遗漏
+        checkFormCompletion();
     }
 
     // ----- 2. 动态逻辑：Q0 选择“有”才展示详细痛经题目 -----
@@ -514,37 +546,87 @@
         } else {
             detailsDiv.style.display = 'none';
         }
+        checkFormCompletion(); // 动态题目显示状态改变，需重新校验
     }
 
-    // ----- 3. 异步提交逻辑 (fetch) -----
+    // ----- 3. 全局必填校验逻辑 -----
+    function checkFormCompletion() {
+        let allAnswered = true;
+        // 获取所有的题目容器
+        const questions = document.querySelectorAll('.question');
+        
+        for (let q of questions) {
+            // 如果该题目的父级 div 痛经细节被折叠隐藏，则跳过不校验
+            if (q.closest('#dysmenorrhea-details') && document.getElementById('dysmenorrhea-details').style.display === 'none') {
+                continue;
+            }
+            
+            // 查找该题目内被选中的 radio 或 checkbox
+            const checkedInputs = q.querySelectorAll('input[type="radio"]:checked, input[type="checkbox"]:checked');
+            // 查找该题目的文本输入框
+            const textInputs = q.querySelectorAll('input[type="text"]');
+            let textFilled = Array.from(textInputs).some(t => t.value.trim() !== '');
+
+            // 判断这个题干是纯文本题还是带有选项的题目
+            const hasOptions = q.querySelectorAll('input[type="radio"], input[type="checkbox"]').length > 0;
+            
+            if (hasOptions) {
+                // 如果是选项题，必须至少有一个选项被勾选才算回答（不管填空是否写字）
+                if (checkedInputs.length === 0) {
+                    allAnswered = false;
+                    break;
+                }
+            } else {
+                // 如果是纯文本题（如最后的 Q∞ 留言），必须有文字输入
+                if (!textFilled) {
+                    allAnswered = false;
+                    break;
+                }
+            }
+        }
+
+        const submitWrapper = document.getElementById('submit-btn-wrapper');
+        const submitHint = document.getElementById('submit-hint');
+        
+        if (allAnswered) {
+            submitWrapper.style.display = 'block';
+            submitHint.style.display = 'none';
+        } else {
+            submitWrapper.style.display = 'none';
+            submitHint.style.display = 'block';
+        }
+    }
+
+    // 实时监听用户的任何输入和点击事件，以进行必答检测
+    document.getElementById('igem-form').addEventListener('input', checkFormCompletion);
+    document.getElementById('igem-form').addEventListener('change', checkFormCompletion);
+
+    // ----- 4. 异步提交逻辑 (fetch) -----
     document.getElementById('igem-form').addEventListener('submit', function(e) {
-        e.preventDefault(); // 阻止原生跳转
+        e.preventDefault(); 
         
         const btn = document.getElementById('submit-btn');
-        btn.innerText = '提交中...';
+        btn.innerText = '正在提交...';
         btn.disabled = true;
 
         const formData = new FormData(this);
-        // FormSubmit 无刷新 API 提交 [此处已填入您的邮箱]
         fetch('https://formsubmit.co/ajax/3411814659@qq.com', {
             method: 'POST',
             body: formData
         })
         .then(response => response.json())
         .then(data => {
-            // 提交成功，隐藏问卷表单，展示缓慢上划的致谢页面
             document.getElementById('igem-form').style.display = 'none';
             document.getElementById('thank-you-screen').style.display = 'block';
             window.scrollTo({ top: 0, behavior: 'smooth' });
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('提交遇到一点小问题，请稍后再试或检查网络设置。');
+            alert('网络可能有波动，提交未成功，请稍后再试。');
             btn.innerText = '提交问卷';
             btn.disabled = false;
         });
     });
-</script>
 
-</body>
-</html>
+    // 页面加载完毕初始化校验一次
+    window.onload = checkFormCompletion;
