@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iGEM 团队女性健康与合成生物学普及调研问卷</title>
+    <style>
+        /* ================= 视觉主题：柔和紫色系 ================= */
+        :root {
+            --bg-color: #F8F5FA;       /* 极浅灰紫背景 */
+            --card-bg: #FFFFFF;        /* 纯白卡片底色 */
+            --primary-color: #6A4C9C;  /* 核心主题紫 */
+            --hover-color: #553982;    /* 交互悬浮紫 */
+            --text-main: #333333;      /* 主文本 */
+            --text-muted: #666666;     /* 次级说明文本 */
+            --border-color: #E3D9ED;   /* 柔和的边框紫 */
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(106, 76, 156, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 22px;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        h2 {
+            color: var(--primary-color);
+            font-size: 18px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 8px;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .preface {
+            background-color: var(--bg-color);
+            border-left: 4px solid var(--primary-color);
+            padding: 15px 20px;
+            border-radius: 0 8px 8px 0;
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 30px;
+        }
+
+        /* 进度条 */
+        .progress-wrapper {
+            background-color: var(--border-color);
+            height: 6px;
+            border-radius: 3px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary-color);
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        /* 题目与选项 */
+        .question { margin-bottom: 25px; }
+        .question-title { font-weight: bold; margin-bottom: 10px; font-size: 15px; }
+        .desc { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; }
+        
+        .options label {
+            display: block;
+            margin-bottom: 8px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .options label:hover { background-color: var(--bg-color); }
+        .options input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-sizing: border-box;
+            outline: none;
+        }
+        .options input[type="text"]:focus { border-color: var(--primary-color); }
+
+        /* 按钮与分页 */
+        .step { display: none; animation: fadeIn 0.4s; }
+        .step.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .btn-wrapper { text-align: right; margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 20px; }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            font-size: 15px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        button:hover { background-color: var(--hover-color); }
+        button:disabled { background-color: var(--border-color); cursor: not-allowed; }
+
+        /* 结束动画界面 */
+        #thank-you-screen {
+            display: none;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        .slide-up-text {
+            opacity: 0;
+            transform: translateY(40px);
+            animation: slideUp 2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+        .slide-up-text p { margin-bottom: 20px; font-size: 15px; color: #444; }
+        .slide-up-text .credits {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px dashed var(--border-color);
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.8;
+        }
+
+        @keyframes slideUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 600px) {
+            .container { padding: 20px 15px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <!-- 问卷表单区域 -->
+    <form id="igem-form">
+        <!-- 进度条 -->
+        <div class="progress-wrapper">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+
+        <h1>iGEM 团队女性健康与合成生物学普及调研问卷</h1>
+
+        <!-- ================= 页面 0：前置文案 ================= -->
+        <div class="step active" id="step-0">
+            <div class="preface">
+                <p>您好！我们是bit(北京理工大学)参与国际基因工程机器大赛（iGEM）的学生团队。本次问卷旨在了解普通人群对妇科炎症健康的认知情况、就医筛查习惯、以及对合成生物学技术民用产品的接受度。</p>
+                <p>本问卷仅限有月经经历的公民填写。有粗糙之处请多包涵，也请多多提供项目反馈，感谢大家。部分涉及到日常生活的问题几乎不含任何科学性，仅作现象罗列，请不要感到冒犯。</p>
+                <p>问卷无需专业知识、无对错答案、匿名填写、仅用于科研调研与公益科普分析，感谢您的支持！</p>
+            </div>
+            <div class="btn-wrapper">
+                <button type="button" onclick="nextStep(1)">下一部分</button>
+            </div>
+        </div>
+
+        <!-- ================= 页面 1：基本信息 ================= -->
+        <div class="step" id="step-1">
+            <h2>第一部分：基本信息</h2>
+            
+            <div class="question">
+                <div class="question-title">您的年龄段：</div>
+                <div class="options">
+                    <label><input type="radio" name="基本信息_年龄段" value="A. 18 岁以下" required> A. 18 岁以下</label>
+                    <label><input type="radio" name="基本信息_年龄段" value="B. 18–22 岁（大学生群体）"> B. 18–22 岁（大学生群体）</label>
+                    <label><input type="radio" name="基本信息_年龄段" value="C. 23–30 岁"> C. 23–30 岁</label>
+                    <label><input type="radio" name="基本信息_年龄段" value="D. 30 岁以上"> D. 30 岁以上</label>
+                </div>
+            </div>
+
+            <div class="question">
+                <div class="question-title">您的专业背景：</div>
+                <div class="options">
+                    <label><input type="radio" name="基本信息_专业背景" value="A. 生物 / 医学相关专业" required> A. 生物 / 医学相关专业</label>
+                    <label><input type="radio" name="基本信息_专业背景" value="B. 理工科非生物医学"> B. 理工科非生物医学</label>
+                    <label><input type="radio" name="基本信息_专业背景" value="C. 文科 / 艺术 / 商科"> C. 文科 / 艺术 / 商科</label>
+                    <label><input type="radio" name="基本信息_专业背景" value="D. 其他非专业背景"> D. 其他非专业背景</label>
+                </div>
+            </div>
+
+            <div class="btn-wrapper">
+                <button type="button" onclick="nextStep(2)">下一部分</button>
+            </div>
+        </div>
+
+        <!-- ================= 页面 2：正式问卷 ================= -->
+        <div class="step" id="step-2">
+            <h2>第二部分：正式问卷</h2>
+            
+            <div class="question">
+                <div class="question-title">Q0. 您曾经有过痛经经历吗？</div>
+                <div class="options">
+                    <label><input type="radio" name="Q0_痛经经历" value="A. 无" onclick="toggleDysmenorrheaFlow(false)" required> A. 无</label>
+                    <label><input type="radio" name="Q0_痛经经历" value="B. 有" onclick="toggleDysmenorrheaFlow(true)"> B. 有</label>
+                </div>
+            </div>
+
+            <!-- 动态折叠区域：选“有”才展示 -->
+            <div id="dysmenorrhea-details" style="display: none; background: #fafafa; padding: 15px; border-radius: 8px; border-left: 3px solid var(--primary-color);">
+                <div class="question">
+                    <div class="question-title">Q 0.5 您认为您的痛经有多严重？</div>
+                    <div class="desc">
+                        （0：可以觉察到，但不影响生活）<br>
+                        （1：疼痛感明显，但对日常生活影响小）<br>
+                        （2：疼痛感较明显，但使用布洛芬等常见止痛药后有缓解，对日常生活影响小）<br>
+                        （3：疼痛感非常明显，服用止痛药后有缓解，但无法正常进行日常生活）<br>
+                        （4：疼痛感非常明显，无法使用常规止痛药缓解）<br>
+                        （5：曾因痛经产生昏迷/休克）
+                    </div>
+                    <div class="options">
+                        <label><input type="radio" name="Q0.5_严重程度" value="0"> 0</label>
+                        <label><input type="radio" name="Q0.5_严重程度" value="1"> 1</label>
+                        <label><input type="radio" name="Q0.5_严重程度" value="2"> 2</label>
+                        <label><input type="radio" name="Q0.5_严重程度" value="3"> 3</label>
+                        <label><input type="radio" name="Q0.5_严重程度" value="4"> 4</label>
+                        <label><input type="radio" name="Q0.5_严重程度" value="5"> 5</label>
+                    </div>
+                </div>
+
+                <div class="question">
+                    <div class="question-title">Q0.6 您是否曾因为痛经而缺席工作、课堂或重要社交场合？</div>
+                    <div class="options">
+                        <label><input type="radio" name="Q0.6_缺席情况" value="A. 从未"> A. 从未</label>
+                        <label><input type="radio" name="Q0.6_缺席情况" value="B. 偶尔（一年1-2次）"> B. 偶尔（一年1-2次）</label>
+                        <label><input type="radio" name="Q0.6_缺席情况" value="C. 较频繁（一年3-5次）"> C. 较频繁（一年3-5次）</label>
+                        <label><input type="radio" name="Q0.6_缺席情况" value="D. 几乎每个月都会"> D. 几乎每个月都会</label>
+                    </div>
+                </div>
+
+                <div class="question">
+                    <div class="question-title">Q0.7 如果您曾因此请假，请如实选择您遇到过的情况（可多选）：</div>
+                    <div class="options">
+                        <label><input type="checkbox" name="Q0.7_请假情况_A" value="A. 单位/学校要求必须提供医院挂号单或诊断证明"> A. 单位/学校要求必须提供医院挂号单或诊断证明</label>
+                        <label><input type="checkbox" name="Q0.7_请假情况_B" value="B. 担心影响考勤绩效、全勤奖或平时成绩"> B. 担心影响考勤绩效、全勤奖或平时成绩</label>
+                        <label><input type="checkbox" name="Q0.7_请假情况_C" value="C. 遭到同事/同学明示或暗示的阴阳怪气"> C. 遭到同事/同学明示或暗示的阴阳怪气（如“装病”“小题大做”）</label>
+                        <label><input type="checkbox" name="Q0.7_请假情况_D" value="D. 自己不好意思开口，宁愿硬扛也不请假"> D. 自己不好意思开口，宁愿硬扛也不请假</label>
+                        <label><input type="checkbox" name="Q0.7_请假情况_E" value="E. 从未遇到过阻碍，请假流程顺畅"> E. 从未遇到过阻碍，请假流程顺畅</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 常规题目继续 -->
+            <div class="question" style="margin-top:25px;">
+                <div class="question-title">Q1. 您认为“痛经”应该被称作一种疾病还是一种症状？</div>
+                <div class="options">
+                    <label><input type="radio" name="Q1_痛经定义" value="A：疾病"> A：疾病</label>
+                    <label><input type="radio" name="Q1_痛经定义" value="B：症状"> B：症状</label>
+                    <label><input type="radio" name="Q1_痛经定义" value="C：不清楚"> C：不清楚</label>
+                </div>
+            </div>
+
+            <div class="question">
+                <div class="question-title">Q2. 您是否知道痛经的成因？</div>
+                <div class="options">
+                    <label><input type="radio" name="Q2_成因" value="A"> A：知道，痛经只和饮食喜好、运动规律相关</label>
+                    <label><input type="radio" name="Q2_成因" value="B"> B：知道，痛经可能是某种器质性的异常</label>
+                    <label><input type="radio" name="Q2_成因" value="C"> C：知道，除上述原因外，也可能有其他原因</label>
+                    <label><input type="radio" name="Q2_成因" value="D"> D：好像知道，但说不清</label>
+                    <label><input type="radio" name="Q2_成因" value="E"> E：不知道</label>
+                </div>
+            </div>
+
+            <div class="question">
+                <div class="question-title">Q3. 您是否听说过“子宫内膜异位症”或“子宫腺肌症”与顽固性痛经存在强关联？</div>
+                <div class="options">
+                    <label><input type="radio" name="Q3_内异症关联" value="A"> A. 听说过，且知道这可能是导致重度痛经的病理性原因</label>
+                    <label><input type="radio" name="Q3_内异症关联" value="B"> B. 只听过名字，但不清楚和痛经有什么关系</label>
+                    <label><input type="radio" name="Q3_内异症关联" value="C"> C. 完全没听过</label>
+                </div>
+            </div>
+
+            <div class="question">
+                <div class="question-title">Q4. 关于布洛芬等非甾体抗炎药，您有过以下哪种顾虑？（可多选）</div>
+                <div class="options">
+                    <label><input type="checkbox" name="Q4_用药顾虑_A" value="A"> A. 担心吃多了会产生耐药性，以后吃啥都不管用</label>
+                    <label><input type="checkbox" name="Q4_用药顾虑_B" value="B"> B. 担心伤胃、伤肝、伤肾</label>
+                    <label><input type="checkbox" name="Q4_用药顾虑_C" value="C"> C. 担心会形成药物依赖（成瘾）</label>
+                    <label><input type="checkbox" name="Q4_用药顾虑_D" value="D"> D. 担心空腹吃出事，但没条件按时吃饭</label>
+                    <label><input type="checkbox" name="Q4_用药顾虑_E" value="E"> E. 完全没有顾虑，疼了就吃</label>
+                </div>
+            </div>
+
+            <div class="question">
+                <div class="question-title">Q5. 您是否认为您自己或您有痛经现象的的亲人/朋友需要去医院相关科室进行彻底检查以寻找病因？</div>
+                <div class="options">
+                    <label><input type="radio" name="Q5_医院检查" value="A. 有必要"> A. 有必要</label>
+                    <label><input type="radio" name="Q5_医院检查" value="B. 没有必要"> B. 没有必要</label>
+                    <label><input type="radio" name="Q5_医院检查" value="C. 已经去诊断过"> C. 已经去诊断过</label>
+                    <input type="text" name="Q5_诊断病因补充" placeholder="选C请填写病因...">
+                </div>
+            </div>
+
+            <div class="question">
+                <div class="question-title">Q6. 如果暂时没有去医院检查，拦住您的主要原因是什么？（可多选）</div>
+                <div class="options">
+                    <label><input type="checkbox" name="Q6_阻碍原因_A" value="A"> A. 不知道该挂妇科、内分泌科还是消化内科</label>
+                    <label><input type="checkbox" name="Q6_阻碍原因_B" value="B"> B. 对内检、B超（尤其是阴超）有心理恐惧或抗拒</label>
+                    <label><input type="checkbox" name="Q6_阻碍原因_C" value="C"> C. 觉得为这点事请假去医院，代价太大</label>
+                    <label><input type="checkbox" name="Q6_阻碍原因_D" value="D"> D. 担心查了一圈最后医生说“没什么大问题，忍忍就好”</label>
+                    <label><input type="checkbox" name="Q6_阻碍原因_E" value="E"> E. 没有阻碍，已经去过或者正准备去</label>
+                </div>
+            </div>
+
+            <div class="question">
+                <div class="question-title">Q7. 日常生活中，您或您的亲人/朋友发生痛经现象时，最常收到的建议是（可以选3项）</div>
+                <div class="options">
+                    <label><input type="checkbox" name="Q7_常收建议_A" value="A"> A 大量摄入红肉（或其他蛋白质）</label>
+                    <label><input type="checkbox" name="Q7_常收建议_B" value="B"> B 运动健身</label>
+                    <label><input type="checkbox" name="Q7_常收建议_C" value="C"> C 服用止痛药</label>
+                    <label><input type="checkbox" name="Q7_常收建议_D" value="D"> D 饮用热的姜糖水或热水</label>
+                    <label><input type="checkbox" name="Q7_常收建议_E" value="E"> E 热敷（包括但不限于使用暖宝宝和坐在被暴晒的石墩子上）</label>
+                    <label><input type="checkbox" name="Q7_常收建议_F" value="F"> F：按摩特定穴位</label>
+                    <label><input type="checkbox" name="Q7_常收建议_G" value="G"> G：中药调养</label>
+                    <input type="text" name="Q7_其他建议补充" placeholder="H：其他（请自行填写）">
+                </div>
+            </div>
+
+            <div class="question">
+                <div class="question-title">Q8. 根据您的经验，最有效的是（可多选）</div>
+                <div class="options">
+                    <label><input type="checkbox" name="Q8_有效建议_A" value="A"> A 大量摄入红肉（或其他蛋白质）</label>
+                    <label><input type="checkbox" name="Q8_有效建议_B" value="B"> B 运动健身</label>
+                    <label><input type="checkbox" name="Q8_有效建议_C" value="C"> C 服用止痛药</label>
+                    <label><input type="checkbox" name="Q8_有效建议_D" value="D"> D 饮用热的姜糖水或热水</label>
+                    <label><input type="checkbox" name="Q8_有效建议_E" value="E"> E 热敷（包括但不限于使用暖宝宝和坐在被暴晒的石墩子上）</label>
+                    <label><input type="checkbox" name="Q8_有效建议_F" value="F"> F：按摩特定穴位</label>
+                    <label><input type="checkbox" name="Q8_有效建议_G" value="G"> G：中药调养</label>
+                    <input type="text" name="Q8_其他有效补充" placeholder="H：其他（请自行填写）">
+                </div>
+            </div>
+
+            <div class="question">
+                <div class="question-title">Q9. 您是否认为应该发明一种方法，使可以在较为便携、可自行操作的情况下预测或鉴定某几类痛经的原因？</div>
+                <div class="options">
+                    <label><input type="radio" name="Q9_预测鉴定方法" value="A"> A. 是</label>
+                    <label><input type="radio" name="Q9_预测鉴定方法" value="B"> B. 否</label>
+                    <label><input type="radio" name="Q9_预测鉴定方法" value="C"> C. 无所谓</label>
+                </div>
+            </div>
+            
+            <div class="question">
+                <div class="question-title">Q9.5 对于妇科炎症居家快速检测产品，您最看重哪一种因素排序？（单选最优先）</div>
+                <div class="options">
+                    <label><input type="radio" name="Q9.5_看重因素" value="A"> A. 隐私性强、无需医院操作</label>
+                    <label><input type="radio" name="Q9.5_看重因素" value="B"> B. 检测结果准确可靠</label>
+                    <label><input type="radio" name="Q9.5_看重因素" value="C"> C. 价格低廉、性价比高</label>
+                    <label><input type="radio" name="Q9.5_看重因素" value="D"> D. 操作简单、无创无痛</label>
+                    <label><input type="radio" name="Q9.5_看重因素" value="E"> E. 便携小巧、方便储存</label>
+                </div>
+            </div>
+
+            <div class="question">
+                <div class="question-title">Q10. 如果我们团队推出合成生物技术研发的女性炎症初筛产品 + 公益科普，您是否愿意尝试 / 支持？</div>
+                <div class="desc">5代表非常愿意，1代表非常不愿意。</div>
+                <div class="options">
+                    <label><input type="radio" name="Q10_支持意愿" value="1"> 1</label>
+                    <label><input type="radio" name="Q10_支持意愿" value="2"> 2</label>
+                    <label><input type="radio" name="Q10_支持意愿" value="3"> 3</label>
+                    <label><input type="radio" name="Q10_支持意愿" value="4"> 4</label>
+                    <label><input type="radio" name="Q10_支持意愿" value="5"> 5</label>
+                </div>
+            </div>
+
+            <div class="question">
+                <div class="question-title">Q11. 如果该产品属于一次性耗材（类似早孕试纸或抗原试剂盒），您认为单次可接受的价格范围是？</div>
+                <div class="options">
+                    <label><input type="radio" name="Q11_价格区间" value="10元以下"> 10元以下</label>
+                    <label><input type="radio" name="Q11_价格区间" value="10-30元"> 10-30元</label>
+                    <label><input type="radio" name="Q11_价格区间" value="30-50元"> 30-50元（能接受，但会犹豫）</label>
+                    <label><input type="radio" name="Q11_价格区间" value="50元以上"> 50元以上（除非特别准，否则不考虑）</label>
+                    <label><input type="radio" name="Q11_价格区间" value="进医保"> 希望能进医保或刷个人账户余额</label>
+                </div>
+            </div>
+
+            <div class="btn-wrapper">
+                <button type="button" onclick="nextStep(3)">下一部分</button>
+            </div>
+        </div>
+
+        <!-- ================= 页面 3：合成生物学 ================= -->
+        <div class="step" id="step-3">
+            <h2>第三部分：大众对合成生物学认知</h2>
+            
+            <div class="question">
+                <div class="question-title">11. 在本次问卷之前，您是否听说过合成生物学？</div>
+                <div class="options">
+                    <label><input type="radio" name="Q11_听说过合成生物" value="A"> A. 经常听说、大致了解</label>
+                    <label><input type="radio" name="Q11_听说过合成生物" value="B"> B. 偶尔听说、不知道具体是什么</label>
+                    <label><input type="radio" name="Q11_听说过合成生物" value="C"> C. 从未听说过</label>
+                </div>
+            </div>
+
+            <div class="question">
+                <div class="question-title">12. 您对 “合成生物学” 的第一印象是？</div>
+                <div class="options">
+                    <label><input type="radio" name="Q12_第一印象" value="A"> A. 高端科研、距离生活很远</label>
+                    <label><input type="radio" name="Q12_第一印象" value="B"> B. 基因改造、风险大、不安全</label>
+                    <label><input type="radio" name="Q12_第一印象" value="C"> C. 新型生物技术、未来应用广泛</label>
+                    <label><input type="radio" name="Q12_第一印象" value="D"> D. 完全陌生、无概念</label>
+                </div>
+            </div>
+
+            <div class="question">
+                <div class="question-title">13. 如果告诉您：合成生物学可以用于研发低成本、安全、便携的健康检测产品，您的态度是？</div>
+                <div class="options">
+                    <label><input type="radio" name="Q13_研发态度" value="A"> A. 非常感兴趣、愿意了解</label>
+                    <label><input type="radio" name="Q13_研发态度" value="B"> B. 可以接受新技术</label>
+                    <label><input type="radio" name="Q13_研发态度" value="C"> C. 担心安全性</label>
+                    <label><input type="radio" name="Q13_研发态度" value="D"> D. 完全不相信民用生物检测</label>
+                </div>
+            </div>
+
+            <div class="question">
+                <div class="question-title">14. 您更愿意接受哪种科普形式了解合成生物学 / 生物健康知识？（可多选）</div>
+                <div class="options">
+                    <label><input type="checkbox" name="Q14_科普形式_A" value="A"> A. 短视频、图文科普</label>
+                    <label><input type="checkbox" name="Q14_科普形式_B" value="B"> B. 校园讲座、线下宣讲</label>
+                    <label><input type="checkbox" name="Q14_科普形式_C" value="C"> C. 趣味问卷、小游戏</label>
+                    <label><input type="checkbox" name="Q14_科普形式_D" value="D"> D. 专业文章、报告</label>
+                    <label><input type="checkbox" name="Q14_科普形式_E" value="E"> E. 几乎不想了解</label>
+                </div>
+            </div>
+
+            <div class="question">
+                <div class="question-title">15. 您是否认为学生科研团队研发的公益健康检测产品会更加亲民、低成本、适配普通人群？</div>
+                <div class="options">
+                    <label><input type="radio" name="Q15_认同度" value="A"> A. 非常认同</label>
+                    <label><input type="radio" name="Q15_认同度" value="B"> B. 比较认同</label>
+                    <label><input type="radio" name="Q15_认同度" value="C"> C. 一般</label>
+                    <label><input type="radio" name="Q15_认同度" value="D"> D. 不太信任</label>
+                </div>
+            </div>
+
+            <div class="question" style="margin-top: 30px;">
+                <div class="question-title">Q∞. 请为我们的项目留下一句简短的话吧（可以使用任何语言）。</div>
+                <input type="text" name="Q∞_寄语留言" placeholder="您的回声，将成为我们的动力..." style="width:100%; padding: 12px; border:1px solid var(--border-color); border-radius: 6px; box-sizing:border-box;">
+            </div>
+
+            <div class="btn-wrapper">
+                <button type="submit" id="submit-btn">提交问卷</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- ================= 提交后的谢幕动画页面 ================= -->
+    <div id="thank-you-screen">
+        <div class="slide-up-text">
+            <h2 style="border:none; text-align:center; margin-bottom: 30px;">感谢您的参与！</h2>
+            <p>每一个真实的选项与留言，都是对我们学生科研团队最珍贵的支持。</p>
+            <p>女性健康与身体困境不应是隐秘的角落，我们希望这次调研不仅能为我们的实验室研发提供严谨的数据依据，<br>也能让更多人开始关注并理性看待身体给出的信号。</p>
+            <p>如果您对我们的项目进展或合成生物学感兴趣，欢迎关注我们的后续发布。</p>
+            <p>再次感谢您的包容与善意。</p>
+            <p style="color: var(--primary-color); font-weight: bold; margin-top: 25px;">愿科学带给每个人更多掌控身体的底气与自由！</p>
+            
+            <div class="credits">
+                <strong>鸣谢：</strong><br>
+                北京理工大学医学技术学院<br>
+                计划撰写与技术支持：BIT队全部PI<br>
+                问卷撰写：BIT生物组所有成员<br>
+                Vibe Coding 与问卷内容整理：███
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // ----- 1. 分页与进度条逻辑 -----
+    const totalSteps = 4; // step-0 到 step-3
+    
+    function nextStep(stepIndex) {
+        // 隐藏所有 step
+        document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+        // 显示目标 step
+        document.getElementById('step-' + stepIndex).classList.add('active');
+        // 更新进度条 (step0为0%，step3为100%)
+        const progressPercent = (stepIndex / (totalSteps - 1)) * 100;
+        document.getElementById('progress-bar').style.width = progressPercent + '%';
+        // 自动回到页面顶部
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ----- 2. 动态逻辑：Q0 选择“有”才展示详细痛经题目 -----
+    function toggleDysmenorrheaFlow(show) {
+        const detailsDiv = document.getElementById('dysmenorrhea-details');
+        if(show) {
+            detailsDiv.style.display = 'block';
+            detailsDiv.style.animation = 'fadeIn 0.4s';
+        } else {
+            detailsDiv.style.display = 'none';
+        }
+    }
+
+    // ----- 3. 异步提交逻辑 (fetch) -----
+    document.getElementById('igem-form').addEventListener('submit', function(e) {
+        e.preventDefault(); // 阻止原生跳转
+        
+        const btn = document.getElementById('submit-btn');
+        btn.innerText = '提交中...';
+        btn.disabled = true;
+
+        const formData = new FormData(this);
+        // FormSubmit 无刷新 API 提交 [此处已填入您的邮箱]
+        fetch('https://formsubmit.co/ajax/3411814659@qq.com', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            // 提交成功，隐藏问卷表单，展示缓慢上划的致谢页面
+            document.getElementById('igem-form').style.display = 'none';
+            document.getElementById('thank-you-screen').style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('提交遇到一点小问题，请稍后再试或检查网络设置。');
+            btn.innerText = '提交问卷';
+            btn.disabled = false;
+        });
+    });
+</script>
+
+</body>
+</html>
